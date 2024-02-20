@@ -1,0 +1,13 @@
+{
+	"geode": "2.0.0-beta.20",
+	"gd": {
+		"win": "2.204",
+		"android": "2.205"
+	},
+	"version": "v1.0.0",
+	"id": "weebify.high-graphics-android",
+	"name": "High Graphics on Android",
+	"developer": "Weebify",
+	"description": "Adds High graphics support for Android",
+	"early-load": true
+}
