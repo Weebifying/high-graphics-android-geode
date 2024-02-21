@@ -19,6 +19,7 @@ class $modify(LoadingLayer) {
 };
 
 class $modify(CCDirector) {
+    // force the game to use high graphics
     void updateContentScale(TextureQuality p0) {
         CCDirector::updateContentScale(p0);
         if (p0 == TextureQuality::kTextureQualityHigh) {
