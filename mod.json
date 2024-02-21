@@ -8,5 +8,12 @@
 	"name": "High Graphics on Android",
 	"developer": "Weebify",
 	"description": "Adds High graphics support for Android",
-	"early-load": true
+	"early-load": true,
+	"dependencies": [
+		{
+			"id": "geode.texture-loader",
+			"version": ">=v1.5.0",
+			"importance": "suggested"
+		}
+	]
 }
