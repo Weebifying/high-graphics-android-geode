@@ -9,6 +9,7 @@
 	"developer": "Weebify",
 	"description": "Adds High graphics support for Android",
 	"early-load": true,
+	"repository": "https://github.com/Weebifying/high-graphics-android-geode",
 	"dependencies": [
 		{
 			"id": "geode.texture-loader",
