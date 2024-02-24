@@ -116,7 +116,7 @@ class $modify (MenuLayer) {
                 log::info("not loaded");
                 geode::Loader::get()->queueInMainThread([] {
                     geode::createQuickPopup("Woops!",
-                        "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. Please download the high textures <cl>using the download button below</c> and <cr>load it using Texture Loader</c> for the best experience!",
+                        "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. Please download the high textures <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c> for the best experience!",
                         "CANCEL", "DOWNLOAD",
                         [](auto, bool btn2) {
                             if (btn2) {
