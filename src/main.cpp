@@ -3,8 +3,10 @@
 #include <Geode/modify/OptionsLayer.hpp>
 #include <Geode/modify/LoadingLayer.hpp>
 #include <Geode/modify/CCDirector.hpp>
+#include <Geode/utils/web.hpp>
 
 using namespace geode::prelude;
+namespace fs = std::filesystem;
 
 class $modify(LoadingLayer) {
     bool init(bool p0) {
@@ -74,6 +76,58 @@ class $modify(AltOptionsLayer, OptionsLayer) {
     }
 
     void onVideo(CCObject* sender) {
-        VideoOptionsLayer::create()->show();
+        VideoOptionsLayer::create()->show();    
+    }
+};
+
+bool highLoaded = false;
+bool hasWarned = false;
+
+class $modify (MenuLayer) {
+    bool init() {
+        if (!MenuLayer::init()) return false;
+
+        for (auto& p : CCFileUtils::sharedFileUtils()->getSearchPaths()) {
+
+            auto path = fs::path(p.c_str()).parent_path();
+
+            if (strcmp(path.parent_path().filename().string().c_str(), "packs") == 0) {
+
+                if (fs::exists(path / "pack.json")) {
+
+                    std::ifstream packjson((path / "pack.json").string());
+                    std::string content( (std::istreambuf_iterator<char>(packjson) ),
+                                         (std::istreambuf_iterator<char>(        ) )
+                    );
+
+                    if (strcmp(matjson::parse(content)["id"].as_string().c_str(), "weebify.high-textures") == 0) {
+                        highLoaded = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        log::info("{} {}", highLoaded, hasWarned);
+
+        if (!highLoaded) {
+            if (!hasWarned) {
+                hasWarned = true;
+                log::info("not loaded");
+                geode::Loader::get()->queueInMainThread([] {
+                    geode::createQuickPopup("Woops!",
+                        "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. Please download the high textures <cl>using the download button below</c> and <cr>load it using Texture Loader</c> for the best experience!",
+                        "CANCEL", "DOWNLOAD",
+                        [](auto, bool btn2) {
+                            if (btn2) {
+                                geode::utils::web::openLinkInBrowser("https://drive.google.com/file/d/1ceS-g-DwIWerTgFPVnjglhtbcmGx1WrA/view?usp=sharing");
+                            }
+                        }
+                    );
+                });
+            }
+        }
+
+        return true;
     }
 };
