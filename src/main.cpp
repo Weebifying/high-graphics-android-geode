@@ -8,19 +8,10 @@
 using namespace geode::prelude; 
 namespace fs = std::filesystem;
 
-// $on_mod(Loaded) {
-//     log::info("mod loaded!");
-//     if (GameManager::sharedState()->m_texQuality == 1) {
-//             CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityLow);
-//     }
-//     if (GameManager::sharedState()->m_texQuality == 3) {
-//         CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityHigh);
-//     }
-// }
 
 class $modify(LoadingLayer) {
+    // load saved graphics setting instead of medium graphics on startup
     bool init(bool p0) {
-        log::info("loading layer init");
         if (GameManager::sharedState()->m_texQuality == 1) {
                 CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityLow);
         }
@@ -63,7 +54,7 @@ class $modify(AltOptionsLayer, OptionsLayer) {
         float optionsY;
         CCSize optionsSize;
 
-        // extremely cursed bc i cant be bothered to do nodeids
+        // waiting for nodeids
         CCArrayExt<CCMenuItemSpriteExtra*> buttons = menu->getChildren();
         for (auto* button: buttons) {
             auto sprite = typeinfo_cast<ButtonSprite*>(button->getChildren()->objectAtIndex(0));
@@ -96,6 +87,7 @@ bool highLoaded = false;
 bool hasWarned = false;
 
 class $modify (MenuLayer) {
+    // popup for if you havent applied the high-textures pack
     bool init() {
         if (!MenuLayer::init()) return false;
 
