@@ -5,17 +5,29 @@
 #include <Geode/modify/CCDirector.hpp>
 #include <Geode/utils/web.hpp>
 
-using namespace geode::prelude;
+using namespace geode::prelude; 
 namespace fs = std::filesystem;
+
+// $on_mod(Loaded) {
+//     log::info("mod loaded!");
+//     if (GameManager::sharedState()->m_texQuality == 1) {
+//             CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityLow);
+//     }
+//     if (GameManager::sharedState()->m_texQuality == 3) {
+//         CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityHigh);
+//     }
+// }
 
 class $modify(LoadingLayer) {
     bool init(bool p0) {
+        log::info("loading layer init");
         if (GameManager::sharedState()->m_texQuality == 1) {
-            CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityLow);
+                CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityLow);
         }
         if (GameManager::sharedState()->m_texQuality == 3) {
             CCDirector::get()->updateContentScale(TextureQuality::kTextureQualityHigh);
         }
+        
         return LoadingLayer::init(p0);
     }
 };
@@ -108,12 +120,10 @@ class $modify (MenuLayer) {
             }
         }
 
-        log::info("{} {}", highLoaded, hasWarned);
 
         if (!highLoaded) {
             if (!hasWarned) {
                 hasWarned = true;
-                log::info("not loaded");
                 geode::Loader::get()->queueInMainThread([] {
                     geode::createQuickPopup("Woops!",
                         "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. Please download the high textures <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c> for the best experience!",
