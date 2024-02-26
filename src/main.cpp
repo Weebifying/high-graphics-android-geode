@@ -117,7 +117,7 @@ class $modify (MenuLayer) {
             if (!hasWarned) {
                 hasWarned = true;
                 geode::Loader::get()->queueInMainThread([] {
-                    if (Mod::get()->getSettingValue<bool>("disable-popup")) {
+                    if (!Mod::get()->getSettingValue<bool>("disable-popup")) {
                         geode::createQuickPopup("Woops!",
                             "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. If you haven't, please download the high textures zip file <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. You can disable this popup in the mod's setting page",
                             "CANCEL", "DOWNLOAD",
