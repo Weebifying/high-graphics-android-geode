@@ -118,11 +118,11 @@ class $modify (MenuLayer) {
                 hasWarned = true;
                 geode::Loader::get()->queueInMainThread([] {
                     geode::createQuickPopup("Woops!",
-                        "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. Please download the high textures <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c> for the best experience!",
+                        "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. If you haven't, please download the high textures <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. If you have, you only need to <co>download the pack.json file</c> and <cr>put it inside your high-textures folder</c>",
                         "CANCEL", "DOWNLOAD",
                         [](auto, bool btn2) {
                             if (btn2) {
-                                geode::utils::web::openLinkInBrowser("https://drive.google.com/file/d/1ceS-g-DwIWerTgFPVnjglhtbcmGx1WrA/view?usp=sharing");
+                                geode::utils::web::openLinkInBrowser("https://drive.google.com/drive/folders/1RwM4Nm0ZoFAq0ugGS-YXCA2XPXzGB9oS?usp=sharing");
                             }
                         }
                     );
