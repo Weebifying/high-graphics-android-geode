@@ -18,5 +18,13 @@
 		}
 	],
 	"tags": ["Universal", "Interface", "Enhancement", "Utility"],
+	"settings": {
+		"disable-popup":{
+			"name": "Disable warning popup",
+			"type": "bool",
+			"default": false
+
+		}
+	},
 	"early-load": true
 }
