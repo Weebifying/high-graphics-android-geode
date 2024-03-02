@@ -1,4 +1,6 @@
 # High Graphics on Android Changelog
+## v1.0.3
+- NodeIDs!!
 ## v1.0.2
 - You can now disable the warning popup
 ## v1.0.1

@@ -4,7 +4,7 @@
 		"win": "2.204",
 		"android": "2.205"
 	},
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"id": "weebify.high-graphics-android",
 	"name": "High Graphics on Android",
 	"developer": "Weebify",
@@ -15,6 +15,11 @@
 			"id": "geode.texture-loader",
 			"version": ">=v1.5.0",
 			"importance": "suggested"
+		},
+		{
+			"id": "geode.node-ids",
+			"version": ">=1.7.1",
+			"importance": "required"
 		}
 	],
 	"tags": ["Universal", "Interface", "Enhancement", "Utility"],
