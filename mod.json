@@ -1,8 +1,9 @@
 {
-	"geode": "2.0.0-beta.21",
+	"geode": "2.0.0-beta.25",
 	"gd": {
 		"win": "2.204",
-		"android": "2.205"
+		"android": "2.205",
+		"ios": "2.205"
 	},
 	"version": "v1.0.2",
 	"id": "weebify.high-graphics-android",
