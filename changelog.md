@@ -1,6 +1,6 @@
 # High Graphics on Android Changelog
 ## v1.0.3-beta.1
-- Added support for 2.206
+- Added 2.206 support
 ## v1.0.2
 - You can now disable the warning popup
 ## v1.0.1
