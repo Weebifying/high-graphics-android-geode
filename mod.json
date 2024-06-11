@@ -1,10 +1,9 @@
 {
-	"geode": "3.0.0-alpha.1",
+	"geode": "3.0.0-alpha.2",
 	"gd": {
-		"win": "2.206",
 		"android": "2.206"
 	},
-	"version": "v1.0.3-beta.1",
+	"version": "v1.0.3-beta.2",
 	"id": "weebify.high-graphics-android",
 	"name": "High Graphics on Android",
 	"developer": "Weebify",
