@@ -13,7 +13,7 @@
 		{
 			"id": "geode.texture-loader",
 			"version": ">=v1.6.0-beta.1",
-			"importance": "suggested"
+			"importance": "recommended"
 		}
 	],
 	"tags": ["Universal", "Interface", "Enhancement", "Utility"],
