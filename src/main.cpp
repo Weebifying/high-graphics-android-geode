@@ -139,17 +139,15 @@ class $modify (MenuLayer) {
             if (!hasWarned) {
                 hasWarned = true;
                 geode::Loader::get()->queueInMainThread([] {
-                    if (!Mod::get()->getSettingValue<bool>("disable-popup")) {
-                        geode::createQuickPopup("Woops!",
-                            "It looks like you haven't loaded the <cj>correct high graphics textures for the current GD version (2.206)</c> yet. If you haven't, please download the high textures zip file <cy>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. You can disable this popup in the mod's setting page",
-                            "CANCEL", "DOWNLOAD",
-                            [](auto, bool btn2) {
-                                if (btn2) {
-                                    geode::utils::web::openLinkInBrowser("https://drive.google.com/drive/folders/1kLSaVvQuGQvvI_hT0p6doAHAtTrVy_uM?usp=sharing");
-                                }
+                    geode::createQuickPopup("Woops!",
+                        "It looks like you haven't loaded the <cj>correct high graphics textures for the current GD version (2.206)</c> yet. If you haven't, please download the high textures zip file <cy>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. You can disable this popup in the mod's setting page",
+                        "CANCEL", "DOWNLOAD",
+                        [](auto, bool btn2) {
+                            if (btn2) {
+                                geode::utils::web::openLinkInBrowser("https://drive.google.com/drive/folders/1kLSaVvQuGQvvI_hT0p6doAHAtTrVy_uM?usp=sharing");
                             }
-                        );
-                    }
+                        }
+                    );
                 });
             }
         }

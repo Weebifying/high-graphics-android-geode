@@ -1,4 +1,6 @@
 # High Graphics on Android Changelog
+## v1.0.4
+- Now forced the user to download the updated textures even if the Disable Popup setting is enabled
 ## v1.0.3
 - Updated for Geode v3.0.0-beta.1
 ## v1.0.3-beta.2

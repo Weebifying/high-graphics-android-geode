@@ -2,7 +2,7 @@
 
 This is where she makes a mod.
 
-### Disclaimer: Please download the high graphics textures from [here](https://drive.google.com/drive/folders/1RwM4Nm0ZoFAq0ugGS-YXCA2XPXzGB9oS?usp=sharing), unzip it and load it using Texture Loader, as Android doesn't have the high textures by default
+### Disclaimer: Please download the high graphics textures from [here](https://drive.google.com/drive/folders/1kLSaVvQuGQvvI_hT0p6doAHAtTrVy_uM?usp=sharing), unzip it and load it using Texture Loader, as Android doesn't have the high textures by default
 
 Adds support for High graphics (and Low as well if you like lol) on Android
 
