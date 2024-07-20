@@ -38,43 +38,17 @@ class $modify(AltOptionsLayer, OptionsLayer) {
     void customSetup() {
         OptionsLayer::customSetup();
 
-        // get the menu containing the buttons
-        CCArrayExt<CCNode*> children = typeinfo_cast<CCLayer*>(this->getChildren()->objectAtIndex(0))->getChildren();
-        CCMenu* menu = nullptr;
+        auto menu = this->m_mainLayer->getChildByID("options-menu");
 
-        for (auto* child: children) {
-            if (child->getChildrenCount() == 6 || child->getChildrenCount() == 7) {
-                menu = typeinfo_cast<CCMenu*>(child);
-                break;
-            }
-        }
-
-        float accountX;
-        float helpX;
-        float optionsY;
-        CCSize optionsSize;
-
-        // waiting for nodeids
-        CCArrayExt<CCMenuItemSpriteExtra*> buttons = menu->getChildren();
-        for (auto* button: buttons) {
-            auto sprite = typeinfo_cast<ButtonSprite*>(button->getChildren()->objectAtIndex(0));
-
-            if (strcmp(getChildOfType<CCLabelBMFont>(sprite, 0)->getString(), "Account") == 0) {
-                accountX = button->getPositionX();
-            } else if (strcmp(getChildOfType<CCLabelBMFont>(sprite, 0)->getString(), "How To Play") == 0)  {
-                helpX = button->getPositionX();
-            } else if (strcmp(getChildOfType<CCLabelBMFont>(sprite, 0)->getString(), "Options") == 0) {
-                button->setPositionX(accountX);
-                optionsY = button->getPositionY();
-                optionsSize = button->getContentSize();
-            }
-        }
-
-        auto videoSprite = ButtonSprite::create("Graphics",130, 0, 1.0, true, "goldFont.fnt", "GJ_button_01.png", 0.0);
-        auto videoButton = CCMenuItemSpriteExtra::create(videoSprite, this, menu_selector(AltOptionsLayer::onVideo));
-        
-        videoButton->setContentSize(optionsSize);
-        videoButton->setPosition({helpX, optionsY});
+        menu->getChildByID("options-button")->setPositionX(menu->getChildByID("account-button")->getPositionX());
+        auto videoButton = CCMenuItemSpriteExtra::create(
+            ButtonSprite::create("Graphics", 130, 0, 1.0, true, "goldFont.fnt", "GJ_button_01.png", 0.0),
+            this,
+            menu_selector(AltOptionsLayer::onVideo)
+        );
+        videoButton->setContentSize(menu->getChildByID("options-button")->getContentSize());
+        videoButton->setPosition({menu->getChildByID("how-to-play-button")->getPositionX(), menu->getChildByID("options-button")->getPositionY()});
+        videoButton->setID("graphics-button");
         menu->addChild(videoButton);
     }
 

@@ -1,4 +1,6 @@
 # High Graphics on Android Changelog
+## v1.0.5
+- Now using Node IDs to add the graphics button to OptionsLayer to prevent potential incompatibility
 ## v1.0.4
 - Now forced the user to download the updated textures even if the Disable Popup setting is enabled
 ## v1.0.3
