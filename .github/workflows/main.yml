@@ -45,6 +45,7 @@ jobs:
           combine: true
           target: ${{ matrix.config.target }}
           sdk: nightly
+          gh-pat: ${{ secrets.GH_PAT }}
 
   package:
     name: Package builds

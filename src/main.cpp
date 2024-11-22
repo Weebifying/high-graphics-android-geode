@@ -8,7 +8,6 @@
 using namespace geode::prelude; 
 namespace fs = std::filesystem;
 
-
 class $modify(LoadingLayer) {
     // load saved graphics setting instead of medium graphics on startup
     bool init(bool p0) {
@@ -59,86 +58,52 @@ class $modify(AltOptionsLayer, OptionsLayer) {
     }
 };
 
+auto links = matjson::makeObject({
+    {"2.2074", "https://files.catbox.moe/5gc2ah.zip"}
+});
+
 class $modify(MenuLayer) {
+    struct Fields {
+        EventListener<web::WebTask> m_listener;
+    };
+
+    void applyTexturePack(fs::path path) {
+        CCFileUtils::get()->addTexturePack({ "weebify.high-textures", { path.string() } });
+    }
+
     bool init() {
         if (!MenuLayer::init()) return false;
 
-        log::info("version: {}", Mod::get()->getMetadata().getGameVersion().value());
+        std::string version = Mod::get()->getMetadata().getGameVersion().value();
+        fs::path path = Mod::get()->getConfigDir();
+        if (!fs::exists(path / version)) {
+            m_fields->m_listener.bind([=] (web::WebTask::Event* e) {
+                if (web::WebResponse* res = e->getValue()) {
+                    fs::path file = path / (version + ".zip");
+                    if (res->into(file)) {
+                        if (file::Unzip::intoDir(file, path, false)) {
+                            applyTexturePack(path / version);
+                        } else {
+                            log::error("failed to extract zip data");
+                        }
+                    } else {
+                        log::error("failed to transfer data to file");
+                    }
+                } else if (web::WebProgress* p = e->getProgress()) {
+                    log::warn("progress: {}", p->downloadProgress().value_or(0.f));
+                } else if (e->isCancelled()) {
+                    log::error("download failed...");
+                }
+            });
+
+            web::WebRequest req = web::WebRequest();
+            req.timeout(std::chrono::seconds(300));
+            m_fields->m_listener.setFilter(req.get(links[version].asString().unwrap()));
+        } else {
+            applyTexturePack(path / version);
+        }
         
 
         return true;
     }
 };
-
-// bool highLoaded = false;
-// bool correctPack = false;
-// bool hasWarned = false;
-
-// class $modify (MenuLayer) {
-//     // popup for if you havent applied the high-textures pack
-//     bool init() {
-//         if (!MenuLayer::init()) return false;
-
-//         for (auto& p : CCFileUtils::sharedFileUtils()->getSearchPaths()) {
-
-//             auto path = fs::path(p.c_str()).parent_path();
-
-//             if (strcmp(path.parent_path().filename().string().c_str(), "packs") == 0) {
-
-//                 if (fs::exists(path / "pack.json")) {
-
-//                     std::ifstream packjson((path / "pack.json").string());
-//                     std::string content( 
-//                         (std::istreambuf_iterator<char>(packjson) ),
-//                         (std::istreambuf_iterator<char>(        ) )
-//                     );
-
-//                     if (strcmp(matjson::parse(content)["id"].as_string().c_str(), "weebify.high-textures") == 0) {
-//                         highLoaded = true;
-//                         if (strcmp(matjson::parse(content)["version"].as_string().c_str(), "1.0.1") == 0) {
-//                             correctPack = true;
-//                             break;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-
-//         if (!highLoaded) {
-//             if (!hasWarned) {
-//                 hasWarned = true;
-//                 geode::Loader::get()->queueInMainThread([] {
-//                     if (!Mod::get()->getSettingValue<bool>("disable-popup")) {
-//                         geode::createQuickPopup("Woops!",
-//                             "It looks like you haven't loaded the <cr>default high graphics textures</c> yet. If you haven't, please download the high textures zip file <cl>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. You can disable this popup in the mod's setting page",
-//                             "CANCEL", "DOWNLOAD",
-//                             [](auto, bool btn2) {
-//                                 if (btn2) {
-//                                     geode::utils::web::openLinkInBrowser("https://drive.google.com/drive/folders/1kLSaVvQuGQvvI_hT0p6doAHAtTrVy_uM?usp=sharing");
-//                                 }
-//                             }
-//                         );
-//                     }
-//                 });
-//             }
-//         } else if (!correctPack) {
-//             if (!hasWarned) {
-//                 hasWarned = true;
-//                 geode::Loader::get()->queueInMainThread([] {
-//                     geode::createQuickPopup("Woops!",
-//                         "It looks like you haven't loaded the <cj>correct high graphics textures for the current GD version (2.206)</c> yet. If you haven't, please download the high textures zip file <cy>using the download button below</c>, <co>unzip it</c> and <cr>load it using Texture Loader</c>. You can disable this popup in the mod's setting page",
-//                         "CANCEL", "DOWNLOAD",
-//                         [](auto, bool btn2) {
-//                             if (btn2) {
-//                                 geode::utils::web::openLinkInBrowser("https://drive.google.com/drive/folders/1kLSaVvQuGQvvI_hT0p6doAHAtTrVy_uM?usp=sharing");
-//                             }
-//                         }
-//                     );
-//                 });
-//             }
-//         }
-
-//         return true;
-//     }
-// };
