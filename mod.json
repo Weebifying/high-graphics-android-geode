@@ -1,33 +1,30 @@
 {
-	"geode": "3.2.0",
+	"geode": "4.0.1",
 	"gd": {
-		"android": "2.206"
+		"win": "2.2074",
+		"android": "2.2074",
+		"ios": "2.2074"
 	},
-	"version": "v1.0.5",
+	"version": "v1.1.0",
 	"id": "weebify.high-graphics-android",
 	"name": "High Graphics on Android",
 	"developer": "Weebify",
 	"description": "Adds High graphics support for Android",
-	"repository": "https://github.com/Weebifying/high-graphics-android-geode",
+	"links": {
+		"source": "https://github.com/Weebifying/high-graphics-android-geode"
+	},
 	"dependencies": [
 		{
 			"id": "geode.texture-loader",
-			"version": ">=v1.6.1",
+			"version": ">=v1.6.6",
 			"importance": "recommended"
 		},
 		{
 			"id": "geode.node-ids",
-            "version": ">=v1.13.1",
+            "version": ">=v1.17.0",
             "importance": "required"
 		}
 	],
-	"tags": ["Universal", "Interface", "Enhancement", "Utility"],
-	"settings": {
-		"disable-popup":{
-			"name": "Disable warning popup",
-			"type": "bool",
-			"default": false
-		}
-	},
+	"tags": ["universal", "interface", "enhancement", "utility"],
 	"early-load": true
 }

@@ -1,4 +1,6 @@
-# High Graphics on Android Changelog
+## v1.1.0
+- Updated for GD 2.2074
+- Improved ease-of-use for users
 ## v1.0.5
 - Now using Node IDs to add the graphics button to OptionsLayer to prevent potential incompatibility
 ## v1.0.4
