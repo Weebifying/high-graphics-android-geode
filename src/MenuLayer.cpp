@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include <Geode/utils/web.hpp>
-#include "nodes/HighTexturesPopup.hpp"
+#include "classes/HighTexturesPopup.hpp"
 
 using namespace geode::prelude; 
 namespace fs = std::filesystem;
@@ -18,12 +18,10 @@ class $modify(MenuLayer) {
         fs::path path = Mod::get()->getConfigDir();
 
         if (!fs::exists(path / version)) {
-            Mod::get()->setSavedValue("applied", false);
-            auto popup = HighTexturesPopup::create("High Textures");
+            auto popup = HighTexturesPopup::create(fs::exists(path / (version + ".zip")));
             popup->m_scene = this;
             popup->show();
         } else {
-            CCFileUtils::get()->addTexturePack({ "weebify.high-textures", { (path / version).string() } });
             if (!Mod::get()->getSavedValue<bool>("applied", false)) {
                 auto okPopup = FLAlertLayer::create("High Textures", "High textures have been applied successfully!", "OK");
                 okPopup->m_scene = this;
@@ -32,10 +30,16 @@ class $modify(MenuLayer) {
             }
         }
 
-        for (auto sp : CCFileUtils::get()->getSearchPaths()) {
-            log::info("{}", sp);
-        }
-        
         return true;
     }
 };
+
+$on_mod(Loaded) {
+    std::string version = Mod::get()->getMetadata().getGameVersion().value();
+    fs::path path = Mod::get()->getConfigDir();
+
+    if (fs::exists(path / version)) {
+        log::debug("Loading high graphics textures");
+        CCFileUtils::get()->addTexturePack({ "weebify.high-textures", { (path / version).string() } });
+    }
+}

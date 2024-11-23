@@ -6,10 +6,10 @@
 		"ios": "2.2074"
 	},
 	"version": "v1.1.0",
-	"id": "weebify.high-graphics-android",
-	"name": "High Graphics on Android",
+	"id": "eepify.high-graphics-android",
+	"name": "High Graphics on Mobile",
 	"developer": "Weebify",
-	"description": "Adds High graphics support for Android",
+	"description": "Adds High graphics support for mobile devices",
 	"links": {
 		"source": "https://github.com/Weebifying/high-graphics-android-geode"
 	},
