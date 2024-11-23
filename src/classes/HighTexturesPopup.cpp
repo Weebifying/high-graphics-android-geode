@@ -217,13 +217,10 @@ ExtractTask HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
     return ExtractTask::run([=] (auto progress, auto hasBeenCancelled) -> ExtractTask::Result {
         auto res = file::Unzip::intoDir(
             [=] (auto num, auto total) {
-                if (hasBeenCancelled()) {
-                    return ExtractTask::Cancel();
-                }
-
                 progress(num / (float)total * 100);
             },
-        file, path, true);
+            file, path, true
+        );
 
         return res;
     });
