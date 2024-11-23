@@ -15,11 +15,6 @@
 	},
 	"dependencies": [
 		{
-			"id": "geode.texture-loader",
-			"version": ">=v1.6.6",
-			"importance": "recommended"
-		},
-		{
 			"id": "geode.node-ids",
             "version": ">=v1.17.0",
             "importance": "required"
