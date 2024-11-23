@@ -40,6 +40,7 @@ $on_mod(Loaded) {
 
     if (fs::exists(path / version)) {
         log::debug("Loading high graphics textures");
-        CCFileUtils::get()->addTexturePack({ "weebify.high-textures", { (path / version).string() } });
+        // CCFileUtils::get()->addTexturePack({ "weebify.high-textures-new", { (path / version).string() } });
+        CCFileUtils::get()->addPriorityPath((path / version).c_str()); // fuck textureldr bro
     }
 }
