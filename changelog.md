@@ -1,3 +1,8 @@
+## v1.1.1
+- Added a backup download link (archive.org) in case the primary link (catbox.moe) fails
+- Increased download timeout from 10 minutes to 15 minutes
+- Removed Geode's textures from the pack
+- Fixed some minor bugs
 ## v1.1.0
 - Updated for GD 2.2074
 - Improved ease-of-use for users

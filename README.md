@@ -10,3 +10,4 @@ Also adds the graphics button in the options layer so you can show your FPS in t
 - Erymanthus/RayDeeUx, for creating this mod's icon
 - NourTheKing, for finding a single obscure bug that i'm not gonna fix but still wants to be in the credits
 - GalacticGMD, for testing this mod on Android 2.2074
+- fiz8095, for... idk

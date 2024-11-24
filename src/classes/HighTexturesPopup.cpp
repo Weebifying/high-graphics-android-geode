@@ -1,5 +1,33 @@
 #include "HighTexturesPopup.hpp"
+#include "../HighGraphics.hpp"
 using namespace geode::utils::file;
+
+CCMenuItemSpriteExtra* HighTexturesPopup::createButton(const char* text, float width, const char* sprite, std::string id, SEL_MenuHandler selector) {
+    CCSize size = m_mainLayer->getContentSize();
+
+    auto spr = ButtonSprite::create(text, width, true, "bigFont.fnt", sprite, 30, 0.65f);
+    auto btn = CCMenuItemSpriteExtra::create(spr, this, selector);
+    btn->setVisible(false);
+    btn->setPosition({ size.width/2, 25 });
+    btn->setContentSize({ width, 30 });
+    spr->setPosition(btn->getContentSize()/2);
+    btn->setID(id);
+    m_menu->addChild(btn);
+
+    return btn;
+}
+
+void HighTexturesPopup::keyDown(cocos2d::enumKeyCodes key) {
+    if (key == cocos2d::enumKeyCodes::KEY_Escape) return;
+    if (m_finished) {
+        if (key == cocos2d::enumKeyCodes::KEY_Space) {
+            Mod::get()->setSavedValue("applied", false);
+            game::restart();
+            return;
+        }
+    }
+    Popup::keyDown(key);
+}
 
 bool HighTexturesPopup::setup(bool zipExists) {
     this->setTitle("High Textures");
@@ -7,7 +35,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
     CCSize size = m_mainLayer->getContentSize();
     m_gameVersion = Mod::get()->getMetadata().getGameVersion().value();
 
-    auto chatLabel = CCLabelBMFont::create("Looks like you have yet to download the high graphics textures necessary for this mod. Please download it now for the best experience. (File size: 110MB)", "chatFont.fnt");
+    auto chatLabel = CCLabelBMFont::create("Looks like you have yet to download the high graphics textures necessary for this mod. Please download it now for the best experience. (File size: 107MB)", "chatFont.fnt");
     chatLabel->setPosition({ size.width/2, size.height - 70 });
     chatLabel->setScale(0.9f);
     chatLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
@@ -19,65 +47,15 @@ bool HighTexturesPopup::setup(bool zipExists) {
     auto menu = CCMenu::create();
     menu->setPosition({ 0, 0 });
     menu->setContentSize(size);
-    menu->setID("download-menu");
+    menu->setID("buttons-menu");
     m_mainLayer->addChild(menu);
+    m_menu = menu;
 
-    auto downloadSpr = ButtonSprite::create("Download", 104, true, "bigFont.fnt", "GJ_button_01.png", 30, 0.65f);
-    auto downloadBtn = CCMenuItemSpriteExtra::create(
-        downloadSpr,
-        this,
-        menu_selector(HighTexturesPopup::onDownload)
-    );
-    downloadBtn->setVisible(false);
-    downloadBtn->setPosition({ size.width/2, 25 });
-    downloadBtn->setContentSize({ 104, 30 });
-    downloadSpr->setPosition(downloadBtn->getContentSize()/2);
-    downloadBtn->setID("download-button");
-    menu->addChild(downloadBtn);
-    m_downloadBtn = downloadBtn;
-
-    auto extractSpr = ButtonSprite::create("Extract", 104, true, "bigFont.fnt", "GJ_button_01.png", 30, 0.65f);
-    auto extractBtn = CCMenuItemSpriteExtra::create(
-        extractSpr,
-        this,
-        menu_selector(HighTexturesPopup::onExtract)
-    );
-    extractBtn->setVisible(false);
-    extractBtn->setPosition({ size.width/2, 25 });
-    extractBtn->setContentSize({ 104, 30 });
-    extractSpr->setPosition(extractBtn->getContentSize()/2);
-    extractBtn->setID("extract-button");
-    menu->addChild(extractBtn);
-    m_extractBtn = extractBtn;
-
-    auto retrySpr = ButtonSprite::create("Retry", 104, true, "bigFont.fnt", "GJ_button_01.png", 30, 0.65f);
-    auto retryBtn = CCMenuItemSpriteExtra::create(
-        retrySpr,
-        this,
-        menu_selector(HighTexturesPopup::onRetry)
-    );
-    retryBtn->setVisible(false);
-    retryBtn->setPosition({ size.width/2, 25 });
-    retryBtn->setContentSize({ 104, 30 });
-    retrySpr->setPosition(retryBtn->getContentSize()/2);
-    retryBtn->setID("retry-button");
-    menu->addChild(retryBtn);
-    m_retryBtn = retryBtn;
-
-    auto applySpr = ButtonSprite::create("Restart", 180, true, "bigFont.fnt", "GJ_button_02.png", 30, 0.65f);
-    auto applyBtn = CCMenuItemSpriteExtra::create(
-        applySpr,
-        this,
-        menu_selector(HighTexturesPopup::onRestart)
-    );
-    applyBtn->setVisible(false);
-    applyBtn->setPosition({ size.width/2, 25 });
-    applyBtn->setContentSize({ 144, 30 });
-    applySpr->setPosition(applyBtn->getContentSize()/2);
-    applyBtn->setID("apply-button");
-    menu->addChild(applyBtn);
-    m_applyBtn = applyBtn;
-    
+    m_downloadBtn = createButton("Download", 104, "GJ_button_01.png", "download-button", menu_selector(HighTexturesPopup::onDownload));
+    m_extractBtn = createButton("Extract", 104, "GJ_button_02.png", "extract-button", menu_selector(HighTexturesPopup::onExtract));
+    m_retryBtn = createButton("Retry", 104, "GJ_button_04.png", "retry-button", menu_selector(HighTexturesPopup::onRetry));
+    m_restartBtn = createButton("Restart", 104, "GJ_button_01.png", "restart-button", menu_selector(HighTexturesPopup::onRestart));
+    m_hideBtn = createButton("Run in Background", 180, "GJ_button_03.png", "hide-button", menu_selector(HighTexturesPopup::onHide));
 
     auto progressBG = CCSprite::create("GJ_progressBar_001.png");
     progressBG->setVisible(false);
@@ -163,6 +141,8 @@ bool HighTexturesPopup::setup(bool zipExists) {
         m_downloadBtn->setVisible(true);
     }
 
+    m_closeBtn->setVisible(false);
+
     return true;
 }
 
@@ -199,6 +179,13 @@ void HighTexturesPopup::onRestart(CCObject* sender) {
     game::restart();
 }
 
+void HighTexturesPopup::onHide(CCObject* sender) {
+    m_isHidden = true;
+    this->setVisible(false);
+    this->setKeypadEnabled(false);
+    this->setTouchEnabled(false);
+}
+
 void HighTexturesPopup::setDownloadPercentage(float percentage, ccColor3B color) {
     m_downloadPercentage = percentage;
     m_downloadStencil->setScaleX(m_downloadPercentage / 100);
@@ -226,7 +213,24 @@ ExtractTask HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
     });
 }
 
+void HighTexturesPopup::unhide() {
+    if (m_isHidden) {
+        auto scene = CCDirector::sharedDirector()->getRunningScene();
+
+        if (!scene->getChildByIDRecursive(this->getID())) {
+            this->m_scene = scene;
+            this->show();
+        }
+        this->setVisible(true);
+        this->setKeypadEnabled(true);
+        this->setTouchEnabled(true);
+        m_isHidden = false;
+    }
+}
+
 void HighTexturesPopup::startDownload() {
+    bool backup = false;
+
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
 
@@ -234,35 +238,50 @@ void HighTexturesPopup::startDownload() {
     m_downloadLabel->setVisible(true);
     m_downloadLabel->runAction(CCFadeIn::create(0.5f));
 
-    m_chatLabel->setString("Downloading high graphics textures...");
+    m_chatLabel->setString(fmt::format("Downloading high graphics textures...\n({}) ", m_links[m_gameVersion].first).c_str());
 
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
     m_retryBtn->setVisible(false);
-    m_applyBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(true);
 
     setDownloadPercentage(0.f, { 255, 255, 255 });
 
     fs::path path = Mod::get()->getConfigDir();
 
+    web::WebRequest req = web::WebRequest();
+    req.timeout(std::chrono::seconds(900));
+    
     m_downloadListener.bind([=] (web::WebTask::Event* e) {
         if (web::WebResponse* res = e->getValue()) {
-            fs::path file = path / (m_gameVersion + ".zip");
-            if (res->into(file)) {
-                downloadSucceeded(file, path);
+            if (res->ok()) {
+                fs::path file = path / (m_gameVersion + ".zip");
+                if (res->into(file)) {
+                    downloadSucceeded(file, path);
+                } else {
+                    downloadFailed("Failed to transfer data to zip file.");
+                }
             } else {
-                downloadFailed("Failed to transfer data to zip file. Did you time out? (600 seconds)");
+                if (!backup) {
+                    m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link...\n({}) ", m_links[m_gameVersion].second).c_str());
+                    setDownloadPercentage(0.f, { 255, 255, 255 });
+
+                    web::WebRequest backupReq = web::WebRequest();
+                    backupReq.timeout(std::chrono::seconds(900));
+                    m_downloadListener.setFilter(backupReq.get(m_links[m_gameVersion].second));
+                } else {
+                    downloadFailed("Failed to download file. Did you time out? (15 minutes)");
+                }
             }
         } else if (web::WebProgress* p = e->getProgress()) {
             setDownloadPercentage(p->downloadProgress().value_or(0.f), { 255, 255, 255 });
         } else if (e->isCancelled()) {
-            downloadFailed("Download failed.");
+            downloadFailed("Download cancelled.");
         }
     });
 
-    web::WebRequest req = web::WebRequest();
-    req.timeout(std::chrono::seconds(600));
-    m_downloadListener.setFilter(req.get(m_links[m_gameVersion].asString().unwrap()));
+    m_downloadListener.setFilter(req.get(m_links[m_gameVersion].first));
 }
 
 void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
@@ -280,7 +299,8 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
     m_retryBtn->setVisible(false);
-    m_applyBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(true);
 
     setExtractPercentage(0.f, { 255, 255, 255 });
 
@@ -309,12 +329,15 @@ void HighTexturesPopup::downloadSucceeded(fs::path file, fs::path path) {
 }
 
 void HighTexturesPopup::downloadFailed(std::string reason) {
+    unhide();
+    
     m_closeBtn->setVisible(true);
     m_chatLabel->setString(fmt::format("Error downloading: {}", reason).c_str());
 
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
-    m_applyBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
 
     m_retryBtn->setVisible(true);
 
@@ -322,25 +345,32 @@ void HighTexturesPopup::downloadFailed(std::string reason) {
 }
 
 void HighTexturesPopup::extractSucceeded() {
+    unhide();
+    m_finished = true;
+
     m_chatLabel->setString("High graphics textures have been installed successfully! Please restart the game to finish this process.");
 
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
     m_retryBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
 
-    m_applyBtn->setVisible(true);
+    m_restartBtn->setVisible(true);
 
     m_extractPercentage = 100.f;
     setExtractPercentage(m_extractPercentage, { 0, 255, 0 });
 }
 
 void HighTexturesPopup::extractFailed(std::string reason) {
+    unhide();
+
     m_closeBtn->setVisible(true);
     m_chatLabel->setString(fmt::format("Error extracting: {}", reason).c_str());
 
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
-    m_applyBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
 
     m_retryBtn->setVisible(true);
 
