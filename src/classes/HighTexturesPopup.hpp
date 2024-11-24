@@ -18,8 +18,8 @@ public:
 
     inline static std::map<std::string, std::pair<std::string, std::string>> m_links = {
         // changed catbox link!! (removed geode textures lol)
-        // {"2.2074", {"https://fisles.catbox.moe/buykym.zip", "https://archive.org/download/2.2074/2.2074.zip"}}
-        {"2.2074", {"http://localhost:8000/2.2074.zip", "https://archive.org/download/2.2074/2.2074.zip"}}
+        {"2.2074", {"https://files.catbox.moe/buykym.zip", "https://archive.org/download/2.2074/2.2074.zip"}}
+        // {"2.2074", {"http://localhost:8000/2.2074.zip", "https://archive.org/download/2.2074/2.2074.zip"}}
     };
 
     float m_downloadPercentage = 0.f;
@@ -55,7 +55,6 @@ public:
     void onRetry(CCObject* sender);
     void onRestart(CCObject* sender);
     void onHide(CCObject* sender);
-    void unhide();
 
     ExtractTask getExtractTask(fs::path file, fs::path path);
 
@@ -71,4 +70,6 @@ public:
     void downloadFailed(std::string reason);
     void extractSucceeded();
     void extractFailed(std::string reason);
+    void notifySuccess();
+    void notifyFailure(std::string which, std::string reason);
 };

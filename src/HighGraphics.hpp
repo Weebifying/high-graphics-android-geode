@@ -12,6 +12,8 @@ public:
     std::map<std::string, int> m_num = {
         {"2.2074", 2827}
     };
+    bool m_success = false;
+    int m_numFiles;
 
     static HighGraphics* get();
     int getNumFiles(fs::path path);

@@ -27,6 +27,9 @@ $on_mod(Loaded) {
     std::string version = Mod::get()->getMetadata().getGameVersion().value();
     fs::path path = Mod::get()->getConfigDir();
 
+    HighGraphics* manager = HighGraphics::get();
+    manager->m_numFiles = manager->getNumFiles(path / version);
+
     if (fs::exists(path / version)) {
         log::debug("Loading high graphics textures");
         // CCFileUtils::get()->addTexturePack({ "weebify.high-textures-new", { (path / version).string() } });

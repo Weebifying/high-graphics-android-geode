@@ -8,10 +8,6 @@ using namespace geode::prelude;
 namespace fs = std::filesystem;
 
 class $modify(MenuLayer) {
-    // static void onModify(auto& self) {
-    //     (void) self.setHookPriority("MenuLayer::init", INT_MIN + 1);
-    // }
-
     static CCScene* scene(bool videoOption) {
         auto scene = MenuLayer::scene(videoOption);
 
@@ -20,11 +16,7 @@ class $modify(MenuLayer) {
         HighGraphics* manager = HighGraphics::get();
         manager->m_version = version;
 
-        int numFiles = manager->getNumFiles(path / version);
-
-        log::error("numFiles={}", numFiles);
-
-        if (!fs::exists(path / version) || (numFiles < manager->m_num[version])) {
+        if (!fs::exists(path / version) || (manager->m_numFiles < manager->m_num[version]) || manager->m_success) {
             if (manager->m_popup == nullptr) {
                 manager->m_popup = HighTexturesPopup::create(fs::exists(path / (version + ".zip")));
                 manager->m_popup->setID("HighTexturesPopup");
@@ -44,7 +36,6 @@ class $modify(MenuLayer) {
             }
         }
     
-        // manager->m_first = false;
         return scene;
     }
 };

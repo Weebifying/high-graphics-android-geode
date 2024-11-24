@@ -118,7 +118,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
 
     auto downloadLabel = CCLabelBMFont::create(fmt::format("{:.2f}%", m_downloadPercentage).c_str(), "bigFont.fnt");
     downloadLabel->setVisible(false);
-    downloadLabel->setPosition({ 150, progressBG->getPositionY() + 20});
+    downloadLabel->setPosition({ 180, progressBG->getPositionY() + 20});
     downloadLabel->setScale(0.5f);
     downloadLabel->setID("download-label");
     m_mainLayer->addChild(downloadLabel);
@@ -126,7 +126,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
 
     auto extractLabel = CCLabelBMFont::create(fmt::format("{:.2f}%", m_extractPercentage).c_str(), "bigFont.fnt");
     extractLabel->setVisible(false);
-    extractLabel->setPosition({ 200, progressBG->getPositionY() + 20});
+    extractLabel->setPosition({ 230, progressBG->getPositionY() + 20});
     extractLabel->setScale(0.5f);
     extractLabel->setID("extract-label");
     m_mainLayer->addChild(extractLabel);
@@ -136,7 +136,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
         m_extractBtn->setVisible(true);
         chatLabel->setString("Looks like you have downloaded the high textures zip file, but yet to extract it. Please extract it now for the best experience.");
         setDownloadPercentage(100.f, { 0, 255, 0 });
-        extractLabel->setPositionX(150);
+        extractLabel->setPositionX(180);
     } else {
         m_downloadBtn->setVisible(true);
     }
@@ -148,7 +148,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
 
 HighTexturesPopup* HighTexturesPopup::create(bool zipExists) {
     auto ret = new HighTexturesPopup();
-    if (ret && ret->initAnchored(300.f, 200.f, zipExists)) {
+    if (ret && ret->initAnchored(360.f, 200.f, zipExists)) {
         ret->m_zipExists = zipExists;
         ret->autorelease();
         return ret;
@@ -211,21 +211,6 @@ ExtractTask HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
 
         return res;
     });
-}
-
-void HighTexturesPopup::unhide() {
-    if (m_isHidden) {
-        auto scene = CCDirector::sharedDirector()->getRunningScene();
-
-        if (!scene->getChildByIDRecursive(this->getID())) {
-            this->m_scene = scene;
-            this->show();
-        }
-        this->setVisible(true);
-        this->setKeypadEnabled(true);
-        this->setTouchEnabled(true);
-        m_isHidden = false;
-    }
 }
 
 void HighTexturesPopup::startDownload() {
@@ -329,7 +314,7 @@ void HighTexturesPopup::downloadSucceeded(fs::path file, fs::path path) {
 }
 
 void HighTexturesPopup::downloadFailed(std::string reason) {
-    unhide();
+    notifyFailure("Download", reason);
     
     m_closeBtn->setVisible(true);
     m_chatLabel->setString(fmt::format("Error downloading: {}", reason).c_str());
@@ -345,8 +330,10 @@ void HighTexturesPopup::downloadFailed(std::string reason) {
 }
 
 void HighTexturesPopup::extractSucceeded() {
-    unhide();
+    notifySuccess();
+
     m_finished = true;
+    HighGraphics::get()->m_success = true;
 
     m_chatLabel->setString("High graphics textures have been installed successfully! Please restart the game to finish this process.");
 
@@ -362,7 +349,7 @@ void HighTexturesPopup::extractSucceeded() {
 }
 
 void HighTexturesPopup::extractFailed(std::string reason) {
-    unhide();
+    notifyFailure("Extraction", reason);
 
     m_closeBtn->setVisible(true);
     m_chatLabel->setString(fmt::format("Error extracting: {}", reason).c_str());
@@ -375,4 +362,14 @@ void HighTexturesPopup::extractFailed(std::string reason) {
     m_retryBtn->setVisible(true);
 
     setExtractPercentage(m_extractPercentage, { 255, 0, 0 });
+}
+
+void HighTexturesPopup::notifySuccess() {
+    auto notif = Notification::create("High graphics textures have been installed successfully!", NotificationIcon::Success, 5.f);
+    notif->show();
+}
+
+void HighTexturesPopup::notifyFailure(std::string which, std::string reason) {
+    auto notif = Notification::create(fmt::format("{} error: {}", which, reason), NotificationIcon::Error, 5.f);
+    notif->show();
 }
