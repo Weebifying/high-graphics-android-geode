@@ -1,5 +1,5 @@
 {
-	"geode": "4.0.1",
+	"geode": "4.3.1",
 	"gd": {
 		"android": "2.2074",
 		"ios": "2.2074"
@@ -12,13 +12,9 @@
 	"links": {
 		"source": "https://github.com/Weebifying/high-graphics-android-geode"
 	},
-	"dependencies": [
-		{
-			"id": "geode.node-ids",
-            "version": ">=v1.17.0",
-            "importance": "required"
-		}
-	],
+	"dependencies": {
+		"geode.node-ids": ">=v1.17.0"
+	},
 	"tags": ["universal", "interface", "enhancement", "utility"],
 	"early-load": true
 }

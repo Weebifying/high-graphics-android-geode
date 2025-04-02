@@ -37,15 +37,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build the mod
-        #uses: geode-sdk/build-geode-mod@main
-        uses: geode-catgirls/build-geode-mod@main
+        uses: geode-sdk/build-geode-mod@main
         with:
           build-config: RelWithDebInfo
-          bindings: Weebifying/bindings
+          bindings: geode-sdk/bindings
           combine: true
           target: ${{ matrix.config.target }}
           sdk: nightly
-          gh-pat: ${{ secrets.GH_PAT }}
+          cli: nightly
 
   package:
     name: Package builds
@@ -53,8 +52,7 @@ jobs:
     needs: ['build']
 
     steps:
-      #- uses: geode-sdk/build-geode-mod/combine@main
-      - uses: geode-catgirls/build-geode-mod/combine@main
+      - uses: geode-sdk/build-geode-mod/combine@main
         id: build
 
       - uses: actions/upload-artifact@v4
