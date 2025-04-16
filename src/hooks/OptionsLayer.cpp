@@ -13,7 +13,7 @@ class $modify(AltOptionsLayer, OptionsLayer) {
             auto videoButton = CCMenuItemSpriteExtra::create(
                 ButtonSprite::create("Graphics", 130, 0, 1.0, true, "goldFont.fnt", "GJ_button_01.png", 0.0),
                 this,
-                menu_selector(AltOptionsLayer::onVideo)
+                menu_selector(AltOptionsLayer::onAltVideo)
             );
             videoButton->setContentSize(menu->getChildByID("options-button")->getContentSize());
             videoButton->setPosition({menu->getChildByID("how-to-play-button")->getPositionX(), menu->getChildByID("options-button")->getPositionY()});
@@ -22,7 +22,7 @@ class $modify(AltOptionsLayer, OptionsLayer) {
         }
     }
 
-    void onVideo(CCObject* sender) {
-        VideoOptionsLayer::create()->show();    
+    void onAltVideo(CCObject* sender) {
+        VideoOptionsLayer::create()->show();
     }
 };
