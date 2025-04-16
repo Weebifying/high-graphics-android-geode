@@ -1,3 +1,5 @@
+## v1.1.2
+- Added iOS support
 ## v1.1.1
 - Added a backup download link (archive.org) in case the primary link (catbox.moe) fails
 - Increased download timeout from 10 minutes to 15 minutes
