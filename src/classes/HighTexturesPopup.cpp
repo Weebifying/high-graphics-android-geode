@@ -214,7 +214,7 @@ ExtractTask HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
 }
 
 void HighTexturesPopup::startDownload() {
-    int num = 0;
+    auto num = std::make_shared<int>(0);
 
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
@@ -223,7 +223,7 @@ void HighTexturesPopup::startDownload() {
     m_downloadLabel->setVisible(true);
     m_downloadLabel->runAction(CCFadeIn::create(0.5f));
 
-    m_chatLabel->setString(fmt::format("Downloading high graphics textures...\n({}) ", m_links[m_gameVersion][num]).c_str());
+    m_chatLabel->setString(fmt::format("Downloading high graphics textures...\n({}) ", m_links[m_gameVersion][0]).c_str());
 
     m_downloadBtn->setVisible(false);
     m_extractBtn->setVisible(false);
@@ -238,7 +238,7 @@ void HighTexturesPopup::startDownload() {
     web::WebRequest req = web::WebRequest();
     req.timeout(std::chrono::seconds(900));
     
-    m_downloadListener.bind([=, &num] (web::WebTask::Event* e) {
+    m_downloadListener.bind([=] (web::WebTask::Event* e) {
         if (web::WebResponse* res = e->getValue()) {
             if (res->ok()) {
                 fs::path file = path / (m_gameVersion + ".zip");
@@ -250,15 +250,16 @@ void HighTexturesPopup::startDownload() {
                     downloadFailed("Failed to transfer data to zip file.");
                 }
             } else {
-                num += 1;
-                if (num < m_links[m_gameVersion].size()) {
-                    log::debug("Failed to download from primary link: {}. Trying backup link: {}", m_links[m_gameVersion][num - 1], m_links[m_gameVersion][num]);
-                    m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link {}...\n({}) ", num, m_links[m_gameVersion][num]).c_str());
+                (*num)++;
+                auto n = *num;
+                if ((*num) < m_links[m_gameVersion].size()) {
+                    log::debug("Failed to download from primary link: {}. Trying backup link: {}", m_links[m_gameVersion][n - 1], m_links[m_gameVersion][n]);
+                    m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link {}...\n({}) ", n, m_links[m_gameVersion][n]).c_str());
                     setDownloadPercentage(0.f, { 255, 255, 255 });
 
                     web::WebRequest backupReq = web::WebRequest();
                     backupReq.timeout(std::chrono::seconds(900));
-                    m_downloadListener.setFilter(backupReq.get(m_links[m_gameVersion][num]));
+                    m_downloadListener.setFilter(backupReq.get(m_links[m_gameVersion][n]));
                 } else {
                     log::debug("Failed to download from all links.");
                     downloadFailed("Failed to download file. Did you time out? (15 minutes)");
@@ -271,16 +272,11 @@ void HighTexturesPopup::startDownload() {
         }
     });
 
-
-    log::debug("Starting downloading from link: {}", m_links[m_gameVersion][num]);
-    m_downloadListener.setFilter(req.get(m_links[m_gameVersion][num]));
+    log::debug("Starting downloading from link: {}", m_links[m_gameVersion][0]);
+    m_downloadListener.setFilter(req.get(m_links[m_gameVersion][0]));
 }
 
 void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
-    log::debug("file = {}", file.string());
-    log::debug("path = {}", path.string());
-    log::debug("m_gameVersion = {}", m_gameVersion);
-    
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
 
