@@ -29,8 +29,10 @@ $on_mod(Loaded) {
 
     fs::path c1 = dirs::getModConfigDir();
     fs::path c2 = c1 / Mod::get()->getID();
+    fs::path c3 = c1 / "balls.zip";
     log::debug("balls!!! c1 = {}", c1.string());
     log::debug("balls!!! c2 = {}", c2.string());
+    log::debug("balls!!! c3 = {}", c3.string());
     log::debug("balls!!! id = {}", Mod::get()->getID() );
     log::debug("balls!!! path = {}", path.string());
 

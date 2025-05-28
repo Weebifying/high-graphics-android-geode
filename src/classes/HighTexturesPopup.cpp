@@ -277,6 +277,10 @@ void HighTexturesPopup::startDownload() {
 }
 
 void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
+    log::debug("file = {}", file.string());
+    log::debug("path = {}", path.string());
+    log::debug("m_gameVersion = {}", m_gameVersion);
+    
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
 
@@ -298,11 +302,12 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
 
     m_extractListener.bind([=] (ExtractTask::Event* e) {
         if (auto result = e->getValue()) {
-            if (fs::exists(path / m_gameVersion)) {
-                log::debug("Extracted high graphics textures to {}", (path / m_gameVersion).string());
+            fs::path extractedPath = path / m_gameVersion;
+            if (fs::exists(extractedPath)) {
+                log::debug("Extracted high graphics textures to {}", extractedPath.string());
                 extractSucceeded();
             } else {
-                log::debug("Failed to extract high graphics textures to {}", (path / m_gameVersion).string());
+                log::debug("Failed to extract high graphics textures to {}", extractedPath.string());
                 extractFailed("Cannot find folder");
             }
         } else if (auto progress = e->getProgress()) {
