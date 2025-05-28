@@ -238,7 +238,7 @@ void HighTexturesPopup::startDownload() {
     web::WebRequest req = web::WebRequest();
     req.timeout(std::chrono::seconds(900));
     
-    m_downloadListener.bind([&] (web::WebTask::Event* e) {
+    m_downloadListener.bind([=, &num] (web::WebTask::Event* e) {
         if (web::WebResponse* res = e->getValue()) {
             if (res->ok()) {
                 fs::path file = path / (m_gameVersion + ".zip");
