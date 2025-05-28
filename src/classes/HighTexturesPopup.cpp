@@ -33,7 +33,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
     this->setTitle("High Textures");
 
     CCSize size = m_mainLayer->getContentSize();
-    m_gameVersion = Mod::get()->getMetadata().getGameVersion().value();
+    m_gameVersion = Loader::get()->getGameVersion();
 
     auto chatLabel = CCLabelBMFont::create("Looks like you have yet to download the high graphics textures necessary for this mod. Please download it now for the best experience. (File size: 107MB)", "chatFont.fnt");
     chatLabel->setPosition({ size.width/2, size.height - 70 });
@@ -243,13 +243,16 @@ void HighTexturesPopup::startDownload() {
             if (res->ok()) {
                 fs::path file = path / (m_gameVersion + ".zip");
                 if (res->into(file).isOk()) {
+                    log::debug("Downloaded high graphics textures to {}", file.string());
                     downloadSucceeded(file, path);
                 } else {
+                    log::debug("Failed to transfer data to zip file at {}", file.string());
                     downloadFailed("Failed to transfer data to zip file.");
                 }
             } else {
                 num += 1;
                 if (num < m_links[m_gameVersion].size()) {
+                    log::debug("Failed to download from primary link: {}. Trying backup link: {}", m_links[m_gameVersion][num - 1], m_links[m_gameVersion][num]);
                     m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link {}...\n({}) ", num, m_links[m_gameVersion][num]).c_str());
                     setDownloadPercentage(0.f, { 255, 255, 255 });
 
@@ -257,6 +260,7 @@ void HighTexturesPopup::startDownload() {
                     backupReq.timeout(std::chrono::seconds(900));
                     m_downloadListener.setFilter(backupReq.get(m_links[m_gameVersion][num]));
                 } else {
+                    log::debug("Failed to download from all links.");
                     downloadFailed("Failed to download file. Did you time out? (15 minutes)");
                 }
             }
@@ -267,6 +271,8 @@ void HighTexturesPopup::startDownload() {
         }
     });
 
+
+    log::debug("Starting downloading from link: {}", m_links[m_gameVersion][num]);
     m_downloadListener.setFilter(req.get(m_links[m_gameVersion][num]));
 }
 
@@ -293,13 +299,16 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
     m_extractListener.bind([=] (ExtractTask::Event* e) {
         if (auto result = e->getValue()) {
             if (fs::exists(path / m_gameVersion)) {
+                log::debug("Extracted high graphics textures to {}", (path / m_gameVersion).string());
                 extractSucceeded();
             } else {
+                log::debug("Failed to extract high graphics textures to {}", (path / m_gameVersion).string());
                 extractFailed("Cannot find folder");
             }
         } else if (auto progress = e->getProgress()) {
             setExtractPercentage(*progress, { 255, 255, 255 });
         } else if (e->isCancelled()) {
+            log::debug("Extraction cancelled");
             extractFailed("Extraction cancelled?");
         }
     });

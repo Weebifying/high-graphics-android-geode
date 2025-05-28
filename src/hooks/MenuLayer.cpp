@@ -11,7 +11,7 @@ class $modify(MenuLayer) {
     static CCScene* scene(bool videoOption) {
         auto scene = MenuLayer::scene(videoOption);
 
-        std::string version = Mod::get()->getMetadata().getGameVersion().value();
+        std::string version = Loader::get()->getGameVersion();
         fs::path path = Mod::get()->getConfigDir();
         HighGraphics* manager = HighGraphics::get();
         manager->m_version = version;

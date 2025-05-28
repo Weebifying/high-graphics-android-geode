@@ -7,7 +7,7 @@ namespace fs = std::filesystem;
 class $modify(LoadingLayer) {
     // load saved graphics setting instead of medium graphics on startup
     bool init(bool p0) {
-        std::string version = Mod::get()->getMetadata().getGameVersion().value();
+        std::string version = Loader::get()->getGameVersion();
         fs::path path = Mod::get()->getConfigDir();
         HighGraphics* manager = HighGraphics::get();
 
