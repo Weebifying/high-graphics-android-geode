@@ -24,7 +24,7 @@ int HighGraphics::getNumFiles(fs::path path) {
 }
 
 $on_mod(Loaded) {
-    std::string version = Mod::get()->getMetadata().getGameVersion().value();
+    std::string version = Loader::get()->getGameVersion();
     fs::path path = Mod::get()->getConfigDir();
 
     HighGraphics* manager = HighGraphics::get();
