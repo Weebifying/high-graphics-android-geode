@@ -27,6 +27,8 @@ $on_mod(Loaded) {
     std::string version = Loader::get()->getGameVersion();
     fs::path path = Mod::get()->getConfigDir();
 
+    log::debug("balls!!! path = {}", path.string())
+
     HighGraphics* manager = HighGraphics::get();
     manager->m_numFiles = manager->getNumFiles(path / version);
 
