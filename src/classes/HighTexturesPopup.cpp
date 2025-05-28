@@ -242,7 +242,7 @@ void HighTexturesPopup::startDownload() {
         if (web::WebResponse* res = e->getValue()) {
             if (res->ok()) {
                 fs::path file = path / (m_gameVersion + ".zip");
-                if (res->into(file)) {
+                if (res->into(file).isOk()) {
                     downloadSucceeded(file, path);
                 } else {
                     downloadFailed("Failed to transfer data to zip file.");
