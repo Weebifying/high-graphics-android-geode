@@ -1,3 +1,5 @@
+## v1.1.3
+- Added a new primary download link as a GitHub release, thus allowing for more accessibility
 ## v1.1.2
 - Added iOS support
 ## v1.1.1
