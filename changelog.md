@@ -1,3 +1,6 @@
+# High Graphics on Mobile Changelog
+## v1.1.4
+- Updated the Geode version to support JIT-less on iOS
 ## v1.1.3
 - Added a new primary download link as a GitHub release, thus allowing for more accessibility
 ## v1.1.2
