@@ -13,6 +13,8 @@ class $modify(MenuLayer) {
 
         std::string version = Loader::get()->getGameVersion();
         fs::path path = Mod::get()->getConfigDir();
+        log::info("Game version: {}", version);
+        log::info("path: {}", path.string());
         HighGraphics* manager = HighGraphics::get();
         manager->m_version = version;
 

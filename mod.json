@@ -1,10 +1,11 @@
 {
-	"geode": "4.10.0",
+	"geode": "5.0.0-alpha.2",
 	"gd": {
-		"android": "2.2074",
-		"ios": "2.2074"
+		"android": "2.2081",
+		"ios": "2.2081",
+		"win": "2.2081"
 	},
-	"version": "v1.1.4",
+	"version": "v1.2.0",
 	"id": "weebify.high-graphics-android",
 	"name": "High Graphics on Mobile",
 	"developer": "Weebify",

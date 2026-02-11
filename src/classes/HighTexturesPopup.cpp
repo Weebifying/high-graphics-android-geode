@@ -17,19 +17,23 @@ CCMenuItemSpriteExtra* HighTexturesPopup::createButton(const char* text, float w
     return btn;
 }
 
-void HighTexturesPopup::keyDown(cocos2d::enumKeyCodes key) {
+void HighTexturesPopup::keyDown(cocos2d::enumKeyCodes key, double delta) {
     if (key == cocos2d::enumKeyCodes::KEY_Escape) return;
     if (m_finished) {
         if (key == cocos2d::enumKeyCodes::KEY_Space) {
             Mod::get()->setSavedValue("applied", false);
-            game::restart();
+            game::restart(true);
             return;
         }
     }
-    Popup::keyDown(key);
+    Popup::keyDown(key, delta);
 }
 
-bool HighTexturesPopup::setup(bool zipExists) {
+bool HighTexturesPopup::init(bool zipExists) {
+    if (!geode::Popup::init(360.f, 200.f)) {
+        return false;
+    }
+
     this->setTitle("High Textures");
 
     CCSize size = m_mainLayer->getContentSize();
@@ -115,6 +119,30 @@ bool HighTexturesPopup::setup(bool zipExists) {
 	extractClipNode->addChild(extractBar);
     progressBG->addChild(extractClipNode, 2);
 
+    auto checksumBar = CCSprite::create("GJ_progressBar_001.png");
+    checksumBar->setScale(0.992f);
+    checksumBar->setScaleY(0.86f);
+    checksumBar->setPosition(progressBG->getContentSize() / 2);
+    checksumBar->setColor({ 255, 255, 0 });
+    checksumBar->setID("checksum-bar");
+
+    auto checksumStencil = CCScale9Sprite::create("square02_001.png");
+    checksumStencil->setAnchorPoint({ 0, 0.5f });
+    checksumStencil->setContentWidth(checksumBar->getContentWidth());
+    checksumStencil->setContentHeight(100);
+    checksumStencil->setScaleX(m_checksumPercentage / 100);
+    m_checksumStencil = checksumStencil;
+
+    auto checksumClipNode = CCClippingNode::create();
+    checksumClipNode->setStencil(checksumStencil);
+    checksumClipNode->setAnchorPoint({ 0, 0 });
+    checksumClipNode->setPosition({ 0, 0 });
+    checksumClipNode->setContentSize(progressBG->getContentSize());
+    checksumClipNode->setID("checksum-bar-clipping-node");
+
+    checksumClipNode->addChild(checksumBar);
+    progressBG->addChild(checksumClipNode, 3);
+
 
     auto downloadLabel = CCLabelBMFont::create(fmt::format("{:.2f}%", m_downloadPercentage).c_str(), "bigFont.fnt");
     downloadLabel->setVisible(false);
@@ -132,6 +160,14 @@ bool HighTexturesPopup::setup(bool zipExists) {
     m_mainLayer->addChild(extractLabel);
     m_extractLabel = extractLabel;
 
+    auto checksumLabel = CCLabelBMFont::create(fmt::format("{:.2f}%", m_checksumPercentage).c_str(), "bigFont.fnt");
+    checksumLabel->setVisible(false);
+    checksumLabel->setPosition({ 270, progressBG->getPositionY() + 20});
+    checksumLabel->setScale(0.5f);
+    checksumLabel->setID("checksum-label");
+    m_mainLayer->addChild(checksumLabel);
+    m_checksumLabel = checksumLabel;
+
     if (zipExists) {
         m_extractBtn->setVisible(true);
         chatLabel->setString("Looks like you have downloaded the high textures zip file, but yet to extract it. Please extract it now for the best experience.");
@@ -148,7 +184,7 @@ bool HighTexturesPopup::setup(bool zipExists) {
 
 HighTexturesPopup* HighTexturesPopup::create(bool zipExists) {
     auto ret = new HighTexturesPopup();
-    if (ret && ret->initAnchored(360.f, 200.f, zipExists)) {
+    if (ret && ret->init(zipExists)) {
         ret->m_zipExists = zipExists;
         ret->autorelease();
         return ret;
@@ -176,7 +212,7 @@ void HighTexturesPopup::onRetry(CCObject* sender) {
 
 void HighTexturesPopup::onRestart(CCObject* sender) {
     Mod::get()->setSavedValue("applied", false);
-    game::restart();
+    game::restart(true);
 }
 
 void HighTexturesPopup::onHide(CCObject* sender) {
@@ -200,17 +236,46 @@ void HighTexturesPopup::setExtractPercentage(float percentage, ccColor3B color) 
     m_extractLabel->setColor(color);
 }
 
-ExtractTask HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
-    return ExtractTask::run([=] (auto progress, auto hasBeenCancelled) -> ExtractTask::Result {
-        auto res = file::Unzip::intoDir(
-            [=] (auto num, auto total) {
-                progress(num / (float)total * 100);
-            },
-            file, path, true
-        );
+void HighTexturesPopup::setChecksumPercentage(float percentage, ccColor3B color) {
+    m_checksumPercentage = percentage;
+    m_checksumStencil->setScaleX(m_checksumPercentage / 100);
+    m_checksumLabel->setString(fmt::format("{:.2f}%", m_checksumPercentage).c_str());
+    m_checksumLabel->setColor(color);
+}
 
-        return res;
-    });
+void HighTexturesPopup::handleDownloadFinish(web::WebResponse res, std::shared_ptr<int> num, fs::path path) {
+    if (res.ok()) {
+        fs::path file = path / (m_gameVersion + ".zip");
+        if (res.into(file).isOk()) {
+            log::debug("Downloaded high graphics textures to {}", file.string());
+            downloadSucceeded(file, path);
+        } else {
+            log::debug("Failed to transfer data to zip file at {}", file.string());
+            downloadFailed("Failed to transfer data to zip file.");
+        }
+    } else {
+        (*num)++;
+        // auto n = *num;
+        auto n = 1;
+        if ((*num) < m_links[m_gameVersion].size()) {
+            log::debug("Failed to download from primary link: {}. Trying backup link: {}", m_links[m_gameVersion][n - 1], m_links[m_gameVersion][n]);
+            m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link {}...\n({}) ", n, m_links[m_gameVersion][n]).c_str());
+            setDownloadPercentage(0.f, { 255, 255, 255 });
+
+            web::WebRequest backupReq = web::WebRequest();
+            backupReq.timeout(std::chrono::seconds(900));
+            m_downloadListener.spawn(
+                backupReq.get(m_links[m_gameVersion][n]),
+                [this, num, path] (web::WebResponse res) {
+                    handleDownloadFinish(res, num, path);
+                }
+            );
+
+        } else {
+            log::debug("Failed to download from all links.");
+            downloadFailed("Failed to download file. Did you time out? (15 minutes)");
+        }
+    }
 }
 
 void HighTexturesPopup::startDownload() {
@@ -237,43 +302,29 @@ void HighTexturesPopup::startDownload() {
 
     web::WebRequest req = web::WebRequest();
     req.timeout(std::chrono::seconds(900));
-    
-    m_downloadListener.bind([=] (web::WebTask::Event* e) {
-        if (web::WebResponse* res = e->getValue()) {
-            if (res->ok()) {
-                fs::path file = path / (m_gameVersion + ".zip");
-                if (res->into(file).isOk()) {
-                    log::debug("Downloaded high graphics textures to {}", file.string());
-                    downloadSucceeded(file, path);
-                } else {
-                    log::debug("Failed to transfer data to zip file at {}", file.string());
-                    downloadFailed("Failed to transfer data to zip file.");
-                }
-            } else {
-                (*num)++;
-                auto n = *num;
-                if ((*num) < m_links[m_gameVersion].size()) {
-                    log::debug("Failed to download from primary link: {}. Trying backup link: {}", m_links[m_gameVersion][n - 1], m_links[m_gameVersion][n]);
-                    m_chatLabel->setString(fmt::format("Failed to download from primary link. Trying backup link {}...\n({}) ", n, m_links[m_gameVersion][n]).c_str());
-                    setDownloadPercentage(0.f, { 255, 255, 255 });
 
-                    web::WebRequest backupReq = web::WebRequest();
-                    backupReq.timeout(std::chrono::seconds(900));
-                    m_downloadListener.setFilter(backupReq.get(m_links[m_gameVersion][n]));
-                } else {
-                    log::debug("Failed to download from all links.");
-                    downloadFailed("Failed to download file. Did you time out? (15 minutes)");
-                }
-            }
-        } else if (web::WebProgress* p = e->getProgress()) {
-            setDownloadPercentage(p->downloadProgress().value_or(0.f), { 255, 255, 255 });
-        } else if (e->isCancelled()) {
-            downloadFailed("Download cancelled.");
-        }
+    req.onProgress([this] (web::WebProgress p) {
+        setDownloadPercentage(p.downloadProgress().value_or(0.f), { 255, 255, 255 });
     });
 
     log::debug("Starting downloading from link: {}", m_links[m_gameVersion][0]);
-    m_downloadListener.setFilter(req.get(m_links[m_gameVersion][0]));
+    m_downloadListener.spawn(
+        req.get(m_links[m_gameVersion][0]),
+        [this, num, path] (web::WebResponse res) {
+        handleDownloadFinish(res, num, path);
+        }
+    );
+}
+
+arc::Future<Result<void, std::string>> HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
+    co_return file::Unzip::intoDir(
+        [this] (auto num, auto total) {
+            geode::queueInMainThread([this, num, total] {
+                this->setExtractPercentage(num / (float)total * 100, { 255, 255, 255 });
+            });
+        },
+        file, path, true
+    );
 }
 
 void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
@@ -296,25 +347,65 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
 
     setExtractPercentage(0.f, { 255, 255, 255 });
 
-    m_extractListener.bind([=] (ExtractTask::Event* e) {
-        if (auto result = e->getValue()) {
+    async::spawn(
+        this->getExtractTask(file, path),
+        [this, path] (Result<void, std::string> res) {
             fs::path extractedPath = path / m_gameVersion;
             if (fs::exists(extractedPath)) {
                 log::debug("Extracted high graphics textures to {}", extractedPath.string());
-                extractSucceeded();
+                extractSucceeded(extractedPath);
             } else {
                 log::debug("Failed to extract high graphics textures to {}", extractedPath.string());
                 extractFailed("Cannot find folder");
             }
-        } else if (auto progress = e->getProgress()) {
-            setExtractPercentage(*progress, { 255, 255, 255 });
-        } else if (e->isCancelled()) {
-            log::debug("Extraction cancelled");
-            extractFailed("Extraction cancelled?");
         }
-    });
+    );
+}
 
-    m_extractListener.setFilter(getExtractTask(file, path));
+arc::Future<std::string> HighTexturesPopup::getChecksumTask(fs::path path) {
+    co_return HighGraphics::get()->getChecksum(
+        [this] (auto num, auto total, auto isCheck) {
+            geode::queueInMainThread([this, num, total, isCheck] {
+                this->setChecksumPercentage(isCheck ? 10 + num / (float)total * 90 : num / (float)total * 10, { 255, 255, 255 });
+            });
+        }, path
+    );
+}
+
+void HighTexturesPopup::startChecksum(fs::path path) {
+    m_closeBtn->setVisible(false);
+    m_progressBG->setVisible(true);
+
+    m_downloadLabel->runAction(CCMoveBy::create(0.5f, { -40, 0 }));
+    m_extractLabel->runAction(CCMoveBy::create(0.5f, { -50, 0 }));
+
+    m_checksumLabel->setOpacity(0);
+    m_checksumLabel->setVisible(true);
+    m_checksumLabel->runAction(CCFadeIn::create(0.5f));
+
+    m_chatLabel->setString("Verifying extracted files' integrity...");
+
+    m_downloadBtn->setVisible(false);
+    m_extractBtn->setVisible(false);
+    m_retryBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(true);
+
+    setChecksumPercentage(0.f, { 255, 255, 255 });
+
+    async::spawn(
+        this->getChecksumTask(path),
+        [this] (std::string res) {
+            std::string expectedChecksum = HighGraphics::get()->m_checksums[m_gameVersion];
+            if (res == expectedChecksum) {
+                log::debug("Checksum verified: {}", res);
+                checksumSucceeded();
+            } else {
+                log::debug("Checksum mismatch: expected {}, got {}", expectedChecksum, res);
+                checksumFailed("Checksum mismatch");
+            }
+        }
+    );
 }
 
 void HighTexturesPopup::downloadSucceeded(fs::path file, fs::path path) {
@@ -340,23 +431,11 @@ void HighTexturesPopup::downloadFailed(std::string reason) {
     setDownloadPercentage(m_downloadPercentage, { 255, 0, 0 });
 }
 
-void HighTexturesPopup::extractSucceeded() {
-    notifySuccess();
-
-    m_finished = true;
-    HighGraphics::get()->m_success = true;
-
-    m_chatLabel->setString("High graphics textures have been installed successfully! Please restart the game to finish this process.");
-
-    m_downloadBtn->setVisible(false);
-    m_extractBtn->setVisible(false);
-    m_retryBtn->setVisible(false);
-    m_hideBtn->setVisible(false);
-
-    m_restartBtn->setVisible(true);
-
+void HighTexturesPopup::extractSucceeded(fs::path path) {
     m_extractPercentage = 100.f;
     setExtractPercentage(m_extractPercentage, { 0, 255, 0 });
+
+    startChecksum(path);
 }
 
 void HighTexturesPopup::extractFailed(std::string reason) {
@@ -375,12 +454,47 @@ void HighTexturesPopup::extractFailed(std::string reason) {
     setExtractPercentage(m_extractPercentage, { 255, 0, 0 });
 }
 
+void HighTexturesPopup::checksumSucceeded() {
+    notifySuccess();
+
+    m_finished = true;
+    HighGraphics::get()->m_success = true;
+
+    m_chatLabel->setString("High graphics textures have been installed successfully! Please restart the game to finish this process.");
+
+    m_downloadBtn->setVisible(false);
+    m_extractBtn->setVisible(false);
+    m_retryBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
+
+    m_restartBtn->setVisible(true);
+
+    m_checksumPercentage = 100.f;
+    setChecksumPercentage(m_checksumPercentage, { 0, 255, 0 });
+}
+
+void HighTexturesPopup::checksumFailed(std::string reason) {
+    notifyFailure("Checksum", reason);
+
+    m_closeBtn->setVisible(true);
+    m_chatLabel->setString(fmt::format("Error verifying files: {}", reason).c_str());
+
+    m_downloadBtn->setVisible(false);
+    m_extractBtn->setVisible(false);
+    m_restartBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
+
+    m_retryBtn->setVisible(true);
+
+    setChecksumPercentage(m_checksumPercentage, { 255, 0, 0 });
+}
+
 void HighTexturesPopup::notifySuccess() {
     auto notif = Notification::create("High graphics textures have been installed successfully!", NotificationIcon::Success, 5.f);
     notif->show();
 }
 
 void HighTexturesPopup::notifyFailure(std::string which, std::string reason) {
-    auto notif = Notification::create(fmt::format("{} error: {}", which, reason), NotificationIcon::Error, 5.f);
+    auto notif = Notification::create(fmt::format("{} error: {}", which, reason).c_str(), NotificationIcon::Error, 5.f);
     notif->show();
 }

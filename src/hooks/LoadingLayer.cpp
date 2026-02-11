@@ -11,8 +11,9 @@ class $modify(LoadingLayer) {
         fs::path path = Mod::get()->getConfigDir();
         HighGraphics* manager = HighGraphics::get();
 
+        // if (fs::exists(path / version) && (manager->m_numFiles >= manager->m_num[version])) {
         if (fs::exists(path / version) && (manager->m_numFiles >= manager->m_num[version])) {
-            CCDirector::get()->updateContentScale(as<TextureQuality>(GameManager::sharedState()->m_texQuality));
+            CCDirector::get()->updateContentScale(static_cast<TextureQuality>(GameManager::sharedState()->m_texQuality));
         }
         
         return LoadingLayer::init(p0);

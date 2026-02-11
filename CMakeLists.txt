@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.21)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(HighGraphicsonAndroid VERSION 1.1.0)
+project(HighGraphicsonAndroid VERSION 1.2.0)
 
 file(GLOB_RECURSE SOURCES
 	src/*.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
