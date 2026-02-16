@@ -432,10 +432,25 @@ void HighTexturesPopup::downloadFailed(std::string reason) {
 }
 
 void HighTexturesPopup::extractSucceeded(fs::path path) {
+    // m_extractPercentage = 100.f;
+    // setExtractPercentage(m_extractPercentage, { 0, 255, 0 });
+
+    // startChecksum(path);
+    notifySuccess();
+
+    m_finished = true;
+    HighGraphics::get()->m_success = true;
+
+    m_chatLabel->setString("High graphics textures have been installed successfully! Please restart the game to finish this process.");
+
+    m_downloadBtn->setVisible(false);
+    m_extractBtn->setVisible(false);
+    m_retryBtn->setVisible(false);
+    m_hideBtn->setVisible(false);
+    m_restartBtn->setVisible(true);
+
     m_extractPercentage = 100.f;
     setExtractPercentage(m_extractPercentage, { 0, 255, 0 });
-
-    startChecksum(path);
 }
 
 void HighTexturesPopup::extractFailed(std::string reason) {
