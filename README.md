@@ -7,6 +7,5 @@ Adds support for High graphics (and Low as well if you like lol) on mobile devic
 Also adds the graphics button in the options layer so you can show your FPS in the advanced menu.
 
 ## Special thanks to:
-- Erymanthus/RayDeeUx, for creating this mod's icon.
 - NourTheKing, for finding a single obscure bug that i'm not gonna fix but still wants to be in the credits.
-- Jaid and `anh`, for testing the current version on Android and iOS respectively.
+- hiimjasmine and `anh`, for testing the current version on iOS.

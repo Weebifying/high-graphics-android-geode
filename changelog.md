@@ -1,7 +1,8 @@
 # High Graphics on Mobile Changelog
 ## 1.2.0
 - Updated for GD 2.2081/Geode 5.0.0
-- Hopefully fixed JIT-less iOS...
+- Hopefully fixed some issues on iOS
+- Updated the mod logo to include iOS
 ## v1.1.4
 - Updated the Geode version to support JIT-less on iOS
 ## v1.1.3

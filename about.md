@@ -7,6 +7,5 @@ Also adds the graphics button in the options layer so you can show your FPS in t
 ### Please report any issues at this mod's GitHub repository.
 
 ## Special thanks to:
-- Erymanthus/RayDeeUx, for creating this mod's icon.
 - NourTheKing, for finding a single obscure bug that i'm not gonna fix but still wants to be in the credits.
-- Jaid and `anh`, for testing the current version on Android and iOS respectively.
+- hiimjasmine and `anh`, for testing the current version on iOS.
