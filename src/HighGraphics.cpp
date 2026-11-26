@@ -1,6 +1,7 @@
 #include "sha1.hpp"
 #include "HighGraphics.hpp"
 
+#include <asp/fs/fs.hpp>
 #include <fstream>
 #include <vector>
 #include <algorithm>
@@ -14,17 +15,23 @@ HighGraphics* HighGraphics::get() {
     return &instance;
 }
 
-int HighGraphics::getNumFiles(fs::path path) {
+int HighGraphics::getNumFiles(fs::PathView path) {
     int count = 0;
 
-    if (fs::exists(path)) {
-        for (const auto& entry : fs::directory_iterator(path)) {
-            if (entry.is_regular_file()) count++;
+    if (path.exists()) {
+        if (auto it = fs::iterDir(path)) {
+            for (const auto& entry : it.unwrap()) {
+                if (entry.isErr()) continue;
+                if (entry.unwrap().isFile()) count++;
+            }
         }
 
-        if (fs::exists(path / "icons")) {
-            for (const auto& entry : fs::directory_iterator(path / "icons")) {
-                if (entry.is_regular_file()) count++;
+        if ((path / "icons").exists()) {
+            if (auto it = fs::iterDir(path / "icons")) {
+                for (const auto& entry : it.unwrap()) {
+                    if (entry.isErr()) continue;
+                    if (entry.unwrap().isFile()) count++;
+                }
             }
         }
     }
@@ -32,19 +39,25 @@ int HighGraphics::getNumFiles(fs::path path) {
     return count;
 }
 
-std::string HighGraphics::getChecksum(geode::Function<void(int, int, bool)> progressCallback, fs::path path) {
-    if (!fs::exists(path)) {
+std::string HighGraphics::getChecksum(geode::Function<void(int, int, bool)> progressCallback, fs::PathView path) {
+    if (!path.exists()) {
         return "";
     }
 
-    if (fs::is_regular_file(path)) {
+    if (path.isFile()) {
         return SHA1::from_file(path.string());
     }
 
-    std::vector<fs::path> files;
-    for (auto const& entry : fs::recursive_directory_iterator(path)) {
-        if (entry.is_regular_file()) {
-            files.push_back(entry.path());
+    auto it = fs::iterDirRecursive(path);
+    if (it.isErr()) {
+        return "";
+    }
+
+    std::vector<fs::Path> files;
+    for (auto const& entry : it.unwrap()) {
+        if (entry.isErr()) continue;
+        if (entry.unwrap().isFile()) {
+            files.push_back(entry.unwrap().path);
         }
     }
 
@@ -52,10 +65,10 @@ std::string HighGraphics::getChecksum(geode::Function<void(int, int, bool)> prog
     int guesstimate = 1.386f * files.size() * std::log2(files.size());
 
     // if only
-    std::sort(files.begin(), files.end(), [&](const fs::path& a, const fs::path& b) {
+    std::sort(files.begin(), files.end(), [&](const fs::Path& a, const fs::Path& b) {
         progressCallback(++c, guesstimate, false);
-        auto ra = fs::relative(a, path).generic_string();
-        auto rb = fs::relative(b, path).generic_string();
+        auto ra = a.lexicallyRelative(path).value().string();
+        auto rb = b.lexicallyRelative(path).value().string();
         return ra < rb;
     });
 
@@ -65,13 +78,13 @@ std::string HighGraphics::getChecksum(geode::Function<void(int, int, bool)> prog
 
     SHA1 sha;
     for (const auto& fp : files) {
-        fs::path rel = fs::relative(fp, path);
-        std::string relstr = rel.generic_string();
+        fs::Path rel = *fp.lexicallyRelative(path);
+        std::string relstr = rel.string();
 
         sha.update(relstr);
         sha.update(std::string(1, '\0'));
 
-        std::ifstream ifs(fp, std::ios::binary);
+        std::ifstream ifs(fp.string(), std::ios::binary);
         if (!ifs) return "";
         sha.update(ifs);
 
@@ -83,7 +96,7 @@ std::string HighGraphics::getChecksum(geode::Function<void(int, int, bool)> prog
 
 $on_mod(Loaded) {
     std::string version = Loader::get()->getGameVersion();
-    fs::path path = Mod::get()->getConfigDir();
+    fs::Path path = Mod::get()->getConfigDir();
 
     log::info("Game version: {}", version);
     log::info("path: {}", path.string());
@@ -92,7 +105,7 @@ $on_mod(Loaded) {
     manager->m_numFiles = manager->getNumFiles(path / version);
     // manager->m_checksum = manager->getChecksum(path / version);
 
-    if (fs::exists(path / version)) {
+    if ((path / version).exists()) {
         log::debug("Loading high graphics textures");
         // CCFileUtils::get()->addTexturePack({ "weebify.high-textures-new", { (path / version).string() } });
         CCFileUtils::get()->addPriorityPath((path / version).string().c_str()); // fuck textureldr bro

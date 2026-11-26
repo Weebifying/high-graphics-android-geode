@@ -3,7 +3,7 @@
 #include <Geode/Geode.hpp>
 #include "classes/HighTexturesPopup.hpp"
 using namespace geode::prelude;
-namespace fs = std::filesystem;
+namespace fs = asp::fs;
 
 class HighGraphics {
 public:
@@ -24,8 +24,8 @@ public:
     std::string m_checksum;
 
     static HighGraphics* get();
-    int getNumFiles(fs::path path);
-    std::string getChecksum(geode::Function<void(int, int, bool)> progressCallback, fs::path path);
+    int getNumFiles(fs::PathView path);
+    std::string getChecksum(geode::Function<void(int, int, bool)> progressCallback, fs::PathView path);
 
 private:
     HighGraphics() = default;

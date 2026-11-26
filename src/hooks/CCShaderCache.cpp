@@ -347,7 +347,7 @@ class $modify(CCShaderCache) {
                 break;
             case kCCShaderType_Position_uColor:
                 loadProgram(p, shader::position_uColor_vert, shader::position_uColor_frag);
-                p->addAttribute("aVertex", kCCVertexAttrib_Position);
+                p->addAttribute(kCCAttributeNamePosition, kCCVertexAttrib_Position);
                 break;
             case kCCShaderType_PositionLengthTextureColor:
                 loadProgram(p, shader::positionColorLengthTexture_vert, shader::positionColorLengthTexture_frag);
@@ -380,6 +380,7 @@ class $modify(CCShaderCache) {
         }
     }
 
+#ifndef GEODE_IS_IOS
     void reloadDefaultShaders() {
         for (auto [t, n] : shaderTypes) {
             auto* p = this->programForKey(n);
@@ -387,4 +388,5 @@ class $modify(CCShaderCache) {
             loadShader(p, t);
         }
     }
+#endif
 };

@@ -198,13 +198,13 @@ void HighTexturesPopup::onDownload(CCObject* sender) {
 }
 
 void HighTexturesPopup::onExtract(CCObject* sender) {
-    fs::path path = Mod::get()->getConfigDir();
+    fs::Path path = Mod::get()->getConfigDir();
     startExtract(path / (m_gameVersion + ".zip"), path);
 }
 
 void HighTexturesPopup::onRetry(CCObject* sender) {
-    fs::path path = Mod::get()->getConfigDir();
-    m_zipExists = fs::exists(path / (m_gameVersion + ".zip"));
+    fs::Path path = Mod::get()->getConfigDir();
+    m_zipExists = (path / (m_gameVersion + ".zip")).exists();
 
     if (m_zipExists) startExtract(path / (m_gameVersion + ".zip"), path);
     else startDownload();
@@ -243,9 +243,9 @@ void HighTexturesPopup::setChecksumPercentage(float percentage, ccColor3B color)
     m_checksumLabel->setColor(color);
 }
 
-void HighTexturesPopup::handleDownloadFinish(web::WebResponse res, std::shared_ptr<int> num, fs::path path) {
+void HighTexturesPopup::handleDownloadFinish(web::WebResponse res, std::shared_ptr<int> num, fs::Path path) {
     if (res.ok()) {
-        fs::path file = path / (m_gameVersion + ".zip");
+        fs::Path file = path / (m_gameVersion + ".zip");
         if (res.into(file).isOk()) {
             log::debug("Downloaded high graphics textures to {}", file.string());
             downloadSucceeded(file, path);
@@ -263,7 +263,7 @@ void HighTexturesPopup::handleDownloadFinish(web::WebResponse res, std::shared_p
             setDownloadPercentage(0.f, { 255, 255, 255 });
 
             web::WebRequest backupReq = web::WebRequest();
-            backupReq.timeout(std::chrono::seconds(900));
+            backupReq.timeout(asp::Duration::fromSecs(900));
             m_downloadListener.spawn(
                 backupReq.get(m_links[m_gameVersion][n]),
                 [this, num, path] (web::WebResponse res) {
@@ -298,10 +298,10 @@ void HighTexturesPopup::startDownload() {
 
     setDownloadPercentage(0.f, { 255, 255, 255 });
 
-    fs::path path = Mod::get()->getConfigDir();
+    fs::Path path = Mod::get()->getConfigDir();
 
     web::WebRequest req = web::WebRequest();
-    req.timeout(std::chrono::seconds(900));
+    req.timeout(asp::Duration::fromSecs(900));
 
     req.onProgress([this] (web::WebProgress p) {
         setDownloadPercentage(p.downloadProgress().value_or(0.f), { 255, 255, 255 });
@@ -316,7 +316,7 @@ void HighTexturesPopup::startDownload() {
     );
 }
 
-arc::Future<Result<void, std::string>> HighTexturesPopup::getExtractTask(fs::path file, fs::path path) {
+arc::Future<Result<void, std::string>> HighTexturesPopup::getExtractTask(fs::Path file, fs::Path path) {
     co_return file::Unzip::intoDir(
         [this] (auto num, auto total) {
             geode::queueInMainThread([this, num, total] {
@@ -327,7 +327,7 @@ arc::Future<Result<void, std::string>> HighTexturesPopup::getExtractTask(fs::pat
     );
 }
 
-void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
+void HighTexturesPopup::startExtract(fs::Path file, fs::Path path) {
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
 
@@ -336,7 +336,7 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
     m_extractLabel->setOpacity(0);
     m_extractLabel->setVisible(true);
     m_extractLabel->runAction(CCFadeIn::create(0.5f));
-    
+
     m_chatLabel->setString("Extracting high graphics textures. This might take a while...");
 
     m_downloadBtn->setVisible(false);
@@ -348,10 +348,10 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
     setExtractPercentage(0.f, { 255, 255, 255 });
 
     async::spawn(
-        this->getExtractTask(file, path),
+        this->getExtractTask(std::move(file), path),
         [this, path] (Result<void, std::string> res) {
-            fs::path extractedPath = path / m_gameVersion;
-            if (fs::exists(extractedPath)) {
+            fs::Path extractedPath = path / m_gameVersion;
+            if (extractedPath.exists()) {
                 log::debug("Extracted high graphics textures to {}", extractedPath.string());
                 extractSucceeded(extractedPath);
             } else {
@@ -362,17 +362,17 @@ void HighTexturesPopup::startExtract(fs::path file, fs::path path) {
     );
 }
 
-arc::Future<std::string> HighTexturesPopup::getChecksumTask(fs::path path) {
+arc::Future<std::string> HighTexturesPopup::getChecksumTask(fs::Path path) {
     co_return HighGraphics::get()->getChecksum(
         [this] (auto num, auto total, auto isCheck) {
             geode::queueInMainThread([this, num, total, isCheck] {
                 this->setChecksumPercentage(isCheck ? 10 + num / (float)total * 90 : num / (float)total * 10, { 255, 255, 255 });
             });
-        }, path
+        }, std::move(path)
     );
 }
 
-void HighTexturesPopup::startChecksum(fs::path path) {
+void HighTexturesPopup::startChecksum(fs::Path path) {
     m_closeBtn->setVisible(false);
     m_progressBG->setVisible(true);
 
@@ -408,16 +408,16 @@ void HighTexturesPopup::startChecksum(fs::path path) {
     );
 }
 
-void HighTexturesPopup::downloadSucceeded(fs::path file, fs::path path) {
+void HighTexturesPopup::downloadSucceeded(fs::Path file, fs::Path path) {
     m_downloadPercentage = 100.f;
     setDownloadPercentage(m_downloadPercentage, { 0, 255, 0 });
 
-    startExtract(file, path);
+    startExtract(std::move(file), std::move(path));
 }
 
 void HighTexturesPopup::downloadFailed(std::string reason) {
     notifyFailure("Download", reason);
-    
+
     m_closeBtn->setVisible(true);
     m_chatLabel->setString(fmt::format("Error downloading: {}", reason).c_str());
 
@@ -431,7 +431,7 @@ void HighTexturesPopup::downloadFailed(std::string reason) {
     setDownloadPercentage(m_downloadPercentage, { 255, 0, 0 });
 }
 
-void HighTexturesPopup::extractSucceeded(fs::path path) {
+void HighTexturesPopup::extractSucceeded(fs::Path path) {
     // m_extractPercentage = 100.f;
     // setExtractPercentage(m_extractPercentage, { 0, 255, 0 });
 

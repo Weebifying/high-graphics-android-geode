@@ -4,21 +4,21 @@
 #include "../classes/HighTexturesPopup.hpp"
 #include "../HighGraphics.hpp"
 
-using namespace geode::prelude; 
-namespace fs = std::filesystem;
+using namespace geode::prelude;
+namespace fs = asp::fs;
 
 class $modify(MenuLayer) {
     static CCScene* scene(bool videoOption) {
         auto scene = MenuLayer::scene(videoOption);
 
         std::string version = Loader::get()->getGameVersion();
-        fs::path path = Mod::get()->getConfigDir();
+        fs::Path path = Mod::get()->getConfigDir();
         HighGraphics* manager = HighGraphics::get();
         manager->m_version = version;
 
-        if (!fs::exists(path / version) || (manager->m_numFiles < manager->m_num[version]) || manager->m_success) {
+        if (!(path / version).exists() || (manager->m_numFiles < manager->m_num[version]) || manager->m_success) {
             if (manager->m_popup == nullptr) {
-                manager->m_popup = HighTexturesPopup::create(fs::exists(path / (version + ".zip")));
+                manager->m_popup = HighTexturesPopup::create((path / (version + ".zip")).exists());
                 manager->m_popup->setID("HighTexturesPopup");
                 manager->m_popup->retain();
             }
@@ -35,7 +35,7 @@ class $modify(MenuLayer) {
                 Mod::get()->setSavedValue("applied", true);
             }
         }
-    
+
         return scene;
     }
 };
