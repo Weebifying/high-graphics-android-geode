@@ -390,3 +390,50 @@ class $modify(CCShaderCache) {
     }
 #endif
 };
+
+// patch uber-shader
+$on_mod(Loaded) {
+    auto base = base::get();
+
+    static_assert(GEODE_COMP_GD_VERSION == 22091, "Outdated offsets!");
+
+    static constexpr uintptr_t VTX_START =
+        GEODE_ANDROID64(0x118B1E9)
+        GEODE_ANDROID32(0xBD1252)
+        GEODE_IOS(0x8373D1)
+    ;
+
+    static constexpr std::array VTX_PATCH = [] {
+        constexpr std::string_view data =
+            "\t\t\tvarying highp vec4 v_fragmentColor;\t\t\t\n"
+            "\t\t\tvarying highp   vec2 v_texCoord;\t\t\t\t\n";
+
+        std::array<uint8_t, data.size()> arr;
+        std::ranges::copy(data, arr.begin());
+        return arr;
+    }();
+
+    static constexpr uintptr_t FRAG_START =
+        GEODE_ANDROID64(0x1187992)
+        GEODE_ANDROID32(0xBCD9FE)
+        GEODE_IOS(0x833B7D)
+    ;
+
+    static constexpr std::array FRAG_PATCH =  [] {
+        constexpr std::string_view data =
+            "precision highp   float;\n\n"
+            "#if 1                            \n";
+
+        std::array<uint8_t, data.size()> arr;
+        std::ranges::copy(data, arr.begin());
+        return arr;
+    }();
+
+    if (Loader::get()->isPatchless()) {
+        GEODE_MOD_STATIC_PATCH(VTX_START, VTX_PATCH);
+        GEODE_MOD_STATIC_PATCH(FRAG_START, FRAG_PATCH);
+    } else {
+        (void) Mod::get()->patch(reinterpret_cast<void*>(base + VTX_START), VTX_PATCH);
+        (void) Mod::get()->patch(reinterpret_cast<void*>(base + FRAG_START), FRAG_PATCH);
+    }
+}
