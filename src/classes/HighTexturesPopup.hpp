@@ -4,7 +4,7 @@
 #include <Geode/utils/web.hpp>
 #include <Geode/utils/async.hpp>
 using namespace geode::prelude;
-namespace fs = std::filesystem;
+namespace fs = asp::fs;
 
 class HighTexturesPopup : public geode::Popup {
 protected:
@@ -59,19 +59,19 @@ public:
     void setChecksumPercentage(float percentage, ccColor3B color);
 
     void startDownload();
-    void startExtract(fs::path file, fs::path path);
-    void startChecksum(fs::path path);
+    void startExtract(fs::Path file, fs::Path path);
+    void startChecksum(fs::Path path);
 
-    void downloadSucceeded(fs::path file, fs::path path);
+    void downloadSucceeded(fs::Path file, fs::Path path);
     void downloadFailed(std::string reason);
-    void extractSucceeded(fs::path path);
+    void extractSucceeded(fs::Path path);
     void extractFailed(std::string reason);
     void checksumSucceeded();
     void checksumFailed(std::string reason);
     void notifySuccess();
     void notifyFailure(std::string which, std::string reason);
 
-    void handleDownloadFinish(web::WebResponse res, std::shared_ptr<int> num, fs::path path);
-    arc::Future<Result<void, std::string>> getExtractTask(fs::path file, fs::path path);
-    arc::Future<std::string> getChecksumTask(fs::path path);
+    void handleDownloadFinish(web::WebResponse res, std::shared_ptr<int> num, fs::Path path);
+    arc::Future<Result<void, std::string>> getExtractTask(fs::Path file, fs::Path path);
+    arc::Future<std::string> getChecksumTask(fs::Path path);
 };
